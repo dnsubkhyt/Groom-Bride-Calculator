@@ -1,58 +1,62 @@
-function calculatePrice(event) {
+ const education = document.getElementById("education");
+ const networth = document.getElementById("networth");
+ const caste = document.getElementById("caste");
+ const skills = document.getElementsByClassName("skill");
+ const gossips = document.getElementsByClassName("reputation");
+
+ const calculate = (event) => {
     event.preventDefault(); 
 
-    let basePrice = 100;
-    let finalPrice = basePrice;
+    let name = document.getElementById("userName").value;
+    let startingBid = document.getElementById("startingBid").value;
+    let loveLet = document.getElementById("loveLetter").value;
 
-    const education = parseFloat(document.getElementById('education').value);
-    const networth = parseFloat(document.getElementById('networth').value);
-    const caste = parseInt(document.getElementById('caste').value);
+    if (name.trim().length > 0 && startingBid.trim().length > 0) {
 
-    finalPrice =  basePrice * education*networth;
-    finalPrice += caste;
+    let initial = Number(startingBid);    
+    let finalPrice = initial * parseFloat(education.value) * parseFloat(networth.value);
+    finalPrice += parseFloat(caste.value);
+    finalPrice = getCheckboxValuesForLoop(skills, finalPrice);
 
-    let totalSkillsValue = calculateSkills();
-    finalPrice += totalSkillsValue; 
+    // Get selected age and apply its multiplier
+    finalPrice = getRadioValue(document.querySelectorAll('input[name="age"]'), finalPrice);
+    //using loop to go through each checked item
+    finalPrice = getCheckboxValuesForLoop(gossips, finalPrice);
 
-    const age = document.querySelector('input[name="age"]:checked');
-    if (age) {
-        finalPrice *= parseFloat(age.value);
-    }
-
-    finalPrice = calculateReputation(finalPrice);
     document.getElementById('finalPrice').innerText = `Final Price: $${finalPrice.toFixed(3)}`;
-}
 
-
-function calculateSkills() {
-    let total = 0; 
-    const skills = document.querySelectorAll('input[type="checkbox"].skill:checked');
-
-    if (skills.length > 0) {
-        skills.forEach(skill => {
-            total += parseInt(skill.value); 
-        });
+    let person = {
+        bride_name: name,
+        bride_price: finalPrice,
+        letter_to_bride: loveLet,
+    }
+    
+    document.getElementById("finalPrice").innerHTML = `The price for your bride ${person.bride_name} is $${person.bride_price.toFixed(3)}. Your love letter is "${person.letter_to_bride}"`;
+    } else {
+        alert("Please enter both your name and starting price.")
     }
 
-    return total; // Return the total skills value
 }
 
-function calculateReputation(finalPrice) {
-    const reputation = document.querySelectorAll('input[type="checkbox"].reputation:checked'); 
-
-    if (reputation.length > 0) { 
-        reputation.forEach(element => {
-            if (element.id === "generalGossip"){
-                finalPrice += parseFloat(element.value);
-            }else{
-                finalPrice *= parseFloat(element.value); 
+const getCheckboxValuesForLoop = (html_collection, price) => {
+    for (let i = 0; i < html_collection.length; i++) {  
+        if (html_collection[i].checked) {
+            if (Number.isInteger(Number(html_collection[i].value))) {
+                price += Number(html_collection[i].value);
+            } else {
+                price *= Number(html_collection[i].value);
             }
-               
-        });
+        }
     }
-
-    return finalPrice; 
+    return price;
 }
 
-
-document.getElementById('calculate').addEventListener('click', calculatePrice);
+const getRadioValue = (node_list, price) => {  
+    node_list.forEach(item => {
+        if (item.checked) {
+            price *= Number(item.value)
+        }
+    })
+    return price;
+}
+document.getElementById("formId").addEventListener("submit", calculate);
